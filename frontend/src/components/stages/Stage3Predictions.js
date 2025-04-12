@@ -4,17 +4,14 @@ import {
   Button, 
   Typography, 
   Stack,
-  Divider,
   Card,
-  CardContent,
-  Alert
+  CardContent
 } from '@mui/material';
 import SchoolIcon from '@mui/icons-material/School';
 import WorkIcon from '@mui/icons-material/Work';
 import MonetizationOnIcon from '@mui/icons-material/MonetizationOn';
-import AccountBalanceIcon from '@mui/icons-material/AccountBalance';
 
-const Stage3Quote = ({ profileData, onNext }) => {
+const Stage3Predictions = ({ profileData, onNext }) => {
   // Check if prediction results exist in profileData
   const prediction = profileData?.prediction || {};
   
@@ -48,14 +45,14 @@ const Stage3Quote = ({ profileData, onNext }) => {
   };
 
   const handleContinue = () => {
-    // Move to the final stage
+    // Move to the quote stage
     onNext(quoteData);
   };
 
   return (
     <Box>
       <Typography variant="h4" component="h1" sx={{ mb: 1, fontWeight: 700 }}>
-        Your Quote
+        Your Future Potential
       </Typography>
       <Typography variant="body1" color="text.secondary" sx={{ mb: 4 }}>
         Based on your profile analysis, here's what we predict for your future
@@ -120,25 +117,27 @@ const Stage3Quote = ({ profileData, onNext }) => {
                     </Box>
                   </Box>
                 </Box>
-                <Box sx={{ ml: 5 }}>
-                  <Typography variant="body2" color="text.secondary">
-                    {collegeIncome.reason}
-                  </Typography>
-                </Box>
+                {(collegeIncome.reason || majorIncome.reason) && (
+                  <Box sx={{ ml: 5 }}>
+                    <Typography variant="body2" color="text.secondary">
+                      {collegeIncome.reason || majorIncome.reason}
+                    </Typography>
+                  </Box>
+                )}
               </CardContent>
             </Card>
-        
-            {/* Internship & Compensation */}
+            
+            {/* Internship Opportunities */}
             {internships.length > 0 && (
               <Card variant="outlined" sx={{ borderRadius: 2 }}>
                 <CardContent>
                   <Box sx={{ display: 'flex', alignItems: 'flex-start', mb: 2 }}>
                     <WorkIcon sx={{ color: 'primary.main', mr: 2, mt: 0.5 }} />
                     <Box>
-                      <Typography variant="h6" sx={{ fontWeight: 600, mb: 1 }}>
-                        Internship Compensation
+                      <Typography variant="h6" sx={{ fontWeight: 600, mb: 0.5 }}>
+                        Potential Internships
                       </Typography>
-                      <Stack spacing={2}>
+                      <Stack spacing={2} sx={{ mt: 1 }}>
                         {internships.map((internship, index) => (
                           <Box key={index}>
                             <Typography variant="subtitle1" fontWeight={500}>
@@ -165,99 +164,6 @@ const Stage3Quote = ({ profileData, onNext }) => {
           </Stack>
         </Box>
         
-        <Divider />
-        
-        {/* Card Offer Section */}
-        <Box>
-          <Typography variant="h5" sx={{ mb: 3, fontWeight: 600 }}>
-            Tomorrow Card Offer
-          </Typography>
-          
-          <Card variant="outlined" sx={{ borderRadius: 2, mb: 3 }}>
-            <CardContent>
-              <Box sx={{ display: 'flex', alignItems: 'flex-start', mb: 3 }}>
-                <AccountBalanceIcon sx={{ color: 'primary.main', mr: 2, mt: 0.5 }} />
-                <Typography variant="h6" sx={{ fontWeight: 600 }}>
-                  Card Details
-                </Typography>
-              </Box>
-              
-              <Stack 
-                direction={{ xs: 'column', sm: 'row' }} 
-                spacing={3} 
-                sx={{ justifyContent: 'space-between', mb: 3, ml: 5 }}
-              >
-                <Box>
-                  <Typography variant="body2" color="text.secondary" gutterBottom>
-                    Credit Limit
-                  </Typography>
-                  <Typography variant="h4" sx={{ fontWeight: 700 }}>
-                    {quoteData.creditLimit}
-                  </Typography>
-                </Box>
-                
-                <Box>
-                  <Typography variant="body2" color="text.secondary" gutterBottom>
-                    Interest Rate
-                  </Typography>
-                  <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                    <Typography 
-                      variant="h4" 
-                      sx={{ 
-                        fontWeight: 700, 
-                        textDecoration: 'line-through',
-                        color: 'text.secondary',
-                        mr: 1
-                      }}
-                    >
-                      {quoteData.interestRate.standard}
-                    </Typography>
-                    <Typography variant="h4" sx={{ fontWeight: 700, color: 'success.main' }}>
-                      {quoteData.interestRate.tomorrow}
-                    </Typography>
-                  </Box>
-                  <Typography variant="caption" color="success.main" sx={{ display: 'block', mt: 0.5 }}>
-                    TomorrowCard APR
-                  </Typography>
-                </Box>
-                
-                <Box>
-                  <Typography variant="body2" color="text.secondary" gutterBottom>
-                    Annual Fee
-                  </Typography>
-                  <Typography variant="h4" sx={{ fontWeight: 700 }}>
-                    {quoteData.annualFee}
-                  </Typography>
-                </Box>
-              </Stack>
-
-              <Box sx={{ ml: 5 }}>
-                <Alert severity="success" sx={{ mb: 2 }}>
-                  {quoteData.approved ? "Approved" : "Pending Review"}
-                </Alert>
-                <Typography variant="body2" color="text.secondary">
-                  Based on your verification results, you qualify for our premium rate of 12% APR, 
-                  which is 50% lower than the standard market rate for students.
-                </Typography>
-              </Box>
-            </CardContent>
-          </Card>
-          
-          <Typography variant="h6" sx={{ fontWeight: 600, mb: 2, ml: 1 }}>
-            Card Benefits
-          </Typography>
-          
-          <Box sx={{ ml: 1 }}>
-            <Stack spacing={1}>
-              {quoteData.benefits.map((benefit, index) => (
-                <Typography key={index} variant="body1" sx={{ display: 'flex', alignItems: 'center' }}>
-                  • {benefit}
-                </Typography>
-              ))}
-            </Stack>
-          </Box>
-        </Box>
-        
         <Box sx={{ display: 'flex', justifyContent: 'center', mt: 2 }}>
           <Button 
             onClick={handleContinue} 
@@ -265,7 +171,7 @@ const Stage3Quote = ({ profileData, onNext }) => {
             size="large"
             sx={{ minWidth: '220px', height: '56px', fontSize: '1rem' }}
           >
-            Continue
+            See My Credit Offer
           </Button>
         </Box>
       </Stack>
@@ -273,4 +179,4 @@ const Stage3Quote = ({ profileData, onNext }) => {
   );
 };
 
-export default Stage3Quote;
+export default Stage3Predictions;

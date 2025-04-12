@@ -4,95 +4,128 @@ import {
   Button, 
   Typography, 
   Stack,
-  Divider
+  Divider,
+  Card,
+  CardContent,
+  Alert
 } from '@mui/material';
 import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
+import AccountBalanceIcon from '@mui/icons-material/AccountBalance';
 
 const Stage4Complete = ({ quoteData, onReset }) => {
+  // Handle application completion
+  const handleCompleteApplication = () => {
+    // You could add API calls here to submit the final application
+    
+    // Then reset or show a completion message
+    onReset();
+  };
   return (
     <Box>
-      <Box sx={{ mb: 4, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-        <CheckCircleOutlineIcon
-          sx={{ 
-            fontSize: 60, 
-            mb: 2,
-            color: '#4caf50',
-            opacity: 0.9
-          }} 
-        />
-        <Typography variant="h4" component="h1" sx={{ mb: 1, fontWeight: 700 }}>
-          Application Complete
-        </Typography>
-        <Typography variant="body1" color="text.secondary" sx={{ textAlign: 'center' }}>
-          We've received your information and will process your application shortly.
-          You will receive an email with further instructions.
-        </Typography>
-      </Box>
-      
-      <Divider sx={{ my: 3 }} />
-      
-      <Typography variant="h6" sx={{ fontWeight: 600, mb: 3 }}>
-        Your Quote Summary
+      <Typography variant="h4" component="h1" sx={{ mb: 1, fontWeight: 700 }}>
+        Your Credit Offer
+      </Typography>
+
+      <Typography variant="body1" color="text.secondary" sx={{ mb: 2 }}>
+        After reviewing your application, we're happy to offer you a credit card with the following details:
       </Typography>
       
-      <Stack spacing={2} sx={{ mb: 4 }}>
-        <Stack 
-          direction="row" 
-          justifyContent="space-between" 
-          alignItems="center"
-        >
-          <Typography variant="body2" color="text.secondary">
-            Credit Limit
-          </Typography>
-          <Typography variant="body1" fontWeight={600}>
-            {quoteData.creditLimit}
-          </Typography>
-        </Stack>
-        
-        <Stack 
-          direction="row" 
-          justifyContent="space-between" 
-          alignItems="center"
-        >
-          <Typography variant="body2" color="text.secondary">
-            Interest Rate
-          </Typography>
-          <Typography variant="body1" fontWeight={600}>
-            {quoteData.interestRate}
-          </Typography>
-        </Stack>
-        
-        <Stack 
-          direction="row" 
-          justifyContent="space-between" 
-          alignItems="center"
-        >
-          <Typography variant="body2" color="text.secondary">
-            Annual Fee
-          </Typography>
-          <Typography variant="body1" fontWeight={600}>
-            {quoteData.annualFee}
-          </Typography>
-        </Stack>
-      </Stack>
-      
-      <Divider sx={{ my: 3 }} />
-      
+      <Card variant="outlined" sx={{ borderRadius: 2, mb: 3 }}>
+        <CardContent>
+          <Box sx={{ display: 'flex', alignItems: 'flex-start', mb: 3 }}>
+            <AccountBalanceIcon sx={{ color: 'primary.main', mr: 2, mt: 0.5 }} />
+            <Typography variant="h6" sx={{ fontWeight: 600 }}>
+              Card Details
+            </Typography>
+          </Box>
+          
+          <Stack 
+            direction={{ xs: 'column', sm: 'row' }} 
+            spacing={3} 
+            sx={{ justifyContent: 'space-between', mb: 3, ml: 5 }}
+          >
+            <Box>
+              <Typography variant="body2" color="text.secondary" gutterBottom>
+                Credit Limit
+              </Typography>
+              <Typography variant="h4" sx={{ fontWeight: 700 }}>
+                {quoteData.creditLimit}
+              </Typography>
+            </Box>
+            
+            <Box>
+              <Typography variant="body2" color="text.secondary" gutterBottom>
+                Interest Rate
+              </Typography>
+              <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                <Typography 
+                  variant="h4" 
+                  sx={{ 
+                    fontWeight: 700, 
+                    textDecoration: 'line-through',
+                    color: 'text.secondary',
+                    mr: 1
+                  }}
+                >
+                  {quoteData.interestRate?.standard || "24%"}
+                </Typography>
+                <Typography variant="h4" sx={{ fontWeight: 700, color: 'success.main' }}>
+                  {quoteData.interestRate?.tomorrow || quoteData.interestRate || "12%"}
+                </Typography>
+              </Box>
+              <Typography variant="caption" color="success.main" sx={{ display: 'block', mt: 0.5 }}>
+                TomorrowCard APR
+              </Typography>
+            </Box>
+            
+            <Box>
+              <Typography variant="body2" color="text.secondary" gutterBottom>
+                Annual Fee
+              </Typography>
+              <Typography variant="h4" sx={{ fontWeight: 700 }}>
+                {quoteData.annualFee}
+              </Typography>
+            </Box>
+          </Stack>
+
+          <Box sx={{ ml: 5 }}>
+            <Alert severity="success" sx={{ mb: 2 }}>
+              {quoteData.approved ? "Approved" : "Pending Review"}
+            </Alert>
+            <Typography variant="body2" color="text.secondary">
+              Based on your verification results, you qualify for our premium rate of 12% APR, 
+              which is 50% lower than the standard market rate for students.
+            </Typography>
+          </Box>
+        </CardContent>
+      </Card>
+
       <Box sx={{ textAlign: 'center', mt: 4 }}>
         <Typography variant="subtitle1" gutterBottom fontWeight={500}>
-          What happens next?
+          Ready to complete your application?
         </Typography>
         <Typography variant="body2" color="text.secondary" sx={{ mb: 4 }}>
-          Our team will review your application and contact you within 1-2 business days.
+          Click below to submit your application. Our team will review it and contact you within 1-2 business days.
         </Typography>
         
-        <Button 
-          onClick={onReset} 
-          variant="outlined"
-          sx={{ minWidth: '200px' }}
-        >
-          Start New Application
-        </Button>
+        <Stack direction="row" spacing={2} justifyContent="center">
+          <Button 
+            onClick={handleCompleteApplication} 
+            variant="contained"
+            size="large"
+            sx={{ minWidth: '220px', height: '56px' }}
+          >
+            Complete Application
+          </Button>
+          
+          <Button 
+            onClick={onReset} 
+            variant="outlined"
+            sx={{ minWidth: '150px' }}
+          >
+            Start Over
+          </Button>
+        </Stack>
       </Box>
     </Box>
   );

@@ -28,7 +28,7 @@ const Stage2Data = ({ userData, onNext, setIsProcessing, setProcessingMessage })
         },
         educationInfo: {
           university: 'Not detected',
-          degree: 'Not detected',
+          degree: 'Bachelors of Science',
           gpa: 'Not available'
         },
         backgroundInfo: {},
@@ -46,7 +46,7 @@ const Stage2Data = ({ userData, onNext, setIsProcessing, setProcessingMessage })
     // Extract education info
     const educationInfo = {
       university: verification_results.school_and_class?.val || 'Not detected',
-      degree: 'Not detected', // The API doesn't seem to return degree info
+      degree: 'Bachelors of Science', // Hardcoded as requested
       gpa: verification_results.gpa?.val || 'Not available'
     };
     

@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Box, Container, useTheme, CircularProgress, Typography } from '@mui/material';
 import Stage1Form from './stages/Stage1Form';
 import Stage2Data from './stages/Stage2Data';
-import Stage3Quote from './stages/Stage3Quote';
+import Stage3Predictions from './stages/Stage3Predictions';
 import Stage4Complete from './stages/Stage4Complete';
 
 const ApplicationFlow = () => {
@@ -82,7 +82,7 @@ const ApplicationFlow = () => {
         )}
 
         {!isProcessing && activeStep === 2 && profileData && (
-          <Stage3Quote 
+          <Stage3Predictions 
             profileData={profileData} 
             onNext={handleStage3Complete} 
           />
