@@ -35,9 +35,9 @@ def getCurrentProcesses(id):
         key = f.replace(f"_check_{id}.json", "")
         if os.path.exists(f"verifications/{f}"):
             with open(f"verifications/{f}") as file:
-                results[key] = completed_name
+                results[key] = {"status": "DONE", "display": completed_name}
         else: 
-            results[key] = name
+            results[key] = {"status": "IN_PROCESS", "display": name}
 
     return results
         

@@ -49,7 +49,8 @@ const ApplicationFlow = () => {
         flexDirection: 'column',
         justifyContent: 'center'
       }}>
-        {isProcessing && (
+        {/* For steps other than Stage1, show the processing indicator */}
+        {isProcessing && activeStep !== 0 && (
           <Box sx={{ 
             display: 'flex', 
             flexDirection: 'column', 
@@ -62,7 +63,8 @@ const ApplicationFlow = () => {
           </Box>
         )}
         
-        {!isProcessing && activeStep === 0 && (
+        {/* Always show Stage1Form when on step 0, even while processing */}
+        {activeStep === 0 && (
           <Stage1Form 
             onNext={handleStage1Complete}
             setIsProcessing={setIsProcessing} 

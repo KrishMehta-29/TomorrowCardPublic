@@ -126,4 +126,37 @@ export const predictFeatures = async (resumeFilename) => {
   }
 };
 
+/**
+ * Get the current verification processes status
+ * @param {string} id - The unique ID of the uploaded documents
+ * @returns {Promise} - Promise that resolves to the verification processes status
+ */
+export const getCurrentProcesses = async (id) => {
+  try {
+    const response = await fetch(`${API_BASE_URL}/get_current_processes?id=${id}`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      credentials: 'omit', // Match the CORS policy
+      mode: 'cors'
+    });
+
+    if (!response.ok) {
+      let errorMessage;
+      try {
+        const errorData = await response.json();
+        errorMessage = errorData.error || `Error: ${response.status} ${response.statusText}`;
+      } catch (e) {
+        errorMessage = `Error: ${response.status} ${response.statusText}`;
+      }
+      throw new Error(errorMessage);
+    }
+
+    return await response.json();
+  } catch (error) {
+    console.error('Error getting current processes:', error);
+    throw error;
+  }
+};
 

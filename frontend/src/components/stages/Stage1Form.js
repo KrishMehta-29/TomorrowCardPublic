@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { 
   Box, 
   Button, 
@@ -9,7 +9,7 @@ import {
   CircularProgress
 } from '@mui/material';
 import FileUploadOutlinedIcon from '@mui/icons-material/FileUploadOutlined';
-import { uploadFiles, verifyDocuments } from '../../api/api';
+import { uploadFiles, verifyDocuments, getCurrentProcesses } from '../../api/api';
 
 const Stage1Form = ({ onNext, setIsProcessing, setProcessingMessage }) => {
   const [name, setName] = useState('');
@@ -21,6 +21,8 @@ const Stage1Form = ({ onNext, setIsProcessing, setProcessingMessage }) => {
   const [uploading, setUploading] = useState(false);
   const [verifying, setVerifying] = useState(false);
   const [statusMessage, setStatusMessage] = useState('');
+  const [processStatuses, setProcessStatuses] = useState({});
+  const pollingIntervalRef = useRef(null);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -54,7 +56,38 @@ const Stage1Form = ({ onNext, setIsProcessing, setProcessingMessage }) => {
       setStatusMessage('Analyzing documents...');
       if (setProcessingMessage) setProcessingMessage('Analyzing documents...');
       
+      // Start polling for verification status
+      let pollingStopped = false;
+      console.log('Starting polling with ID:', id);
+      pollingIntervalRef.current = setInterval(async () => {
+        if (pollingStopped) return;
+        
+        try {
+          console.log('Polling for process status with ID:', id);
+          const processResponse = await getCurrentProcesses(id);
+          console.log('Process response received:', processResponse);
+          
+          if (processResponse && processResponse.processes) {
+            console.log('Process statuses:', processResponse.processes);
+            console.log('Number of processes:', Object.keys(processResponse.processes).length);
+            setProcessStatuses(processResponse.processes);
+          } else {
+            console.warn('Invalid process response format:', processResponse);
+          }
+        } catch (error) {
+          console.error('Error polling processes:', error);
+        }
+      }, 1000);
+      
+      // Make the verification API call
       const verifyResponse = await verifyDocuments(resume_filename, transcript_filename, id);
+      
+      // Stop polling when verification completes
+      pollingStopped = true;
+      if (pollingIntervalRef.current) {
+        clearInterval(pollingIntervalRef.current);
+        pollingIntervalRef.current = null;
+      }
       setVerifying(false);
       
       // Step 3: Move to next stage with all the data
@@ -73,10 +106,113 @@ const Stage1Form = ({ onNext, setIsProcessing, setProcessingMessage }) => {
       setUploading(false);
       setVerifying(false);
       setStatusMessage('');
+      setProcessStatuses({});
+      
+      // Ensure polling is stopped on error
+      if (pollingIntervalRef.current) {
+        clearInterval(pollingIntervalRef.current);
+        pollingIntervalRef.current = null;
+      }
+      
       if (setIsProcessing) setIsProcessing(false);
     }
   };
 
+  // Conditionally render based on verification state
+  if (verifying && Object.keys(processStatuses).length > 0) {
+    // Show only verification status when verifying
+    return (
+      <Box sx={{ py: 4, maxWidth: 600, mx: 'auto' }}>
+        <Typography variant="h5" component="h1" sx={{ mb: 4, fontWeight: 700, textAlign: 'center' }}>
+          Verifying Your Documents
+        </Typography>
+        
+        <Box 
+          sx={{
+            display: 'flex',
+            flexDirection: 'column',
+            gap: 2,
+            width: '100%',
+            maxWidth: '500px',
+            mx: 'auto'
+          }}
+        >
+          {Object.entries(processStatuses).map(([key, process]) => {
+            const isDone = process.status === 'DONE';
+            return (
+              <Box 
+                key={key} 
+                sx={{ 
+                  p: 2,
+                  borderRadius: 2,
+                  boxShadow: '0 4px 20px rgba(0, 0, 0, 0.1)',
+                  transition: 'all 0.3s ease',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 2,
+                  border: '2px solid',
+                  borderColor: isDone ? 'success.main' : 'warning.main',
+                  bgcolor: isDone ? 'rgba(76, 175, 80, 0.05)' : 'rgba(255, 152, 0, 0.05)',
+                  backdropFilter: 'blur(8px)',
+                  position: 'relative',
+                  overflow: 'hidden',
+                  '&::after': {
+                    content: '""',
+                    position: 'absolute',
+                    top: 0,
+                    left: 0,
+                    width: '100%',
+                    height: '100%',
+                    background: 'linear-gradient(135deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0) 100%)',
+                    zIndex: 0,
+                  }
+                }}
+              >
+                {isDone ? (
+                  <Box 
+                    sx={{ 
+                      width: 36, 
+                      height: 36, 
+                      borderRadius: '50%', 
+                      bgcolor: 'success.main', 
+                      display: 'flex', 
+                      alignItems: 'center', 
+                      justifyContent: 'center',
+                      color: 'white',
+                      fontSize: '1.2rem',
+                      flexShrink: 0
+                    }}
+                  >
+                    ✓
+                  </Box>
+                ) : (
+                  <CircularProgress size={36} sx={{ color: 'warning.main', flexShrink: 0 }} />
+                )}
+                
+                <Typography 
+                  variant="body1" 
+                  sx={{
+                    fontWeight: 500,
+                    flex: 1,
+                    position: 'relative',
+                    zIndex: 1
+                  }}
+                >
+                  {process.display}
+                </Typography>
+              </Box>
+            );
+          })}
+        </Box>
+        
+        <Typography variant="body2" color="text.secondary" sx={{ mt: 4, textAlign: 'center' }}>
+          Please wait while we verify your documents. This process may take a few seconds.
+        </Typography>
+      </Box>
+    );
+  }
+  
+  // Regular form display when not verifying
   return (
     <Box>
       <Typography variant="h4" component="h1" sx={{ mb: 1, fontWeight: 700 }}>
@@ -177,12 +313,7 @@ const Stage1Form = ({ onNext, setIsProcessing, setProcessingMessage }) => {
               disabled={isLoading}
               sx={{ height: '56px', mt: 2 }}
             >
-              {isLoading ? (
-                <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                  <CircularProgress size={24} color="inherit" sx={{ mr: 1 }} />
-                  {statusMessage}
-                </Box>
-              ) : 'Continue'}
+              {uploading ? 'Uploading...' : 'Continue'}
             </Button>
           </Box>
         </Stack>
