@@ -85,7 +85,7 @@ def predict_internship_salary(resume_data):
 
         tool_call = structure_response.choices[0].message.tool_calls[0]
         parsed = json.loads(tool_call.function.arguments)
-        return {"val": parsed["internship_salaries"], "reason": "Used web + structured function call"}
+        return {"val": parsed["internship_salaries"], "reason": "Used web search to get salary estimates from https://www.levels.fyi/"}
 
     except Exception as e:
         return {"val": None, "reason": f"Failed during salary estimation: {str(e)}"}

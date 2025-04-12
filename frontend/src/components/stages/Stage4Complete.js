@@ -48,8 +48,24 @@ const Stage4Complete = ({ quoteData, onReset }) => {
               <Typography variant="body2" color="text.secondary" gutterBottom>
                 Credit Limit
               </Typography>
-              <Typography variant="h4" sx={{ fontWeight: 700 }}>
-                {quoteData.creditLimit}
+              <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                <Typography 
+                  variant="h4" 
+                  sx={{ 
+                    fontWeight: 700, 
+                    textDecoration: 'line-through',
+                    color: 'text.secondary',
+                    mr: 1
+                  }}
+                >
+                  $2,000
+                </Typography>
+                <Typography variant="h4" sx={{ fontWeight: 700, color: 'success.main' }}>
+                  $4,000
+                </Typography>
+              </Box>
+              <Typography variant="caption" color="success.main" sx={{ display: 'block', mt: 0.5 }}>
+                TomorrowCard Enhanced Credit
               </Typography>
             </Box>
             
@@ -93,8 +109,8 @@ const Stage4Complete = ({ quoteData, onReset }) => {
               {quoteData.approved ? "Approved" : "Pending Review"}
             </Alert>
             <Typography variant="body2" color="text.secondary">
-              Based on your verification results, you qualify for our premium rate of 12% APR, 
-              which is 50% lower than the standard market rate for students.
+              Based on your verification results, you qualify for our premium rate of 12% APR
+              and an enhanced credit limit of $4,000, doubling the standard $2,000 limit for students.
             </Typography>
           </Box>
         </CardContent>
