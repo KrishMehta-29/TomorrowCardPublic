@@ -1,0 +1,23 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[co]
+*.pyd
+
+# Environments
+.env
+.venv
+env/
+venv/
+ENV/
+env.baka/
+venv.bak/
+
+# Jupyter Notebook files
+*.ipynb
+.vercel
+
+# Uploads
+uploads
+
+# verifications 
+verifications 
