@@ -9,7 +9,7 @@ client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 def is_affirmative_response(content):
     return bool(re.match(r'^\s*yes\b', content.strip(), re.IGNORECASE))
 
-def check_courses_vs_major(transcript_data, resume_data):
+def check_courses_vs_major(transcript_data, resume_data, id):
     major = resume_data.get("major", "")
     if major == "":
         print("getting major from transcript")
@@ -41,7 +41,7 @@ def check_courses_vs_major(transcript_data, resume_data):
         "reason": content if not course_alignment else None
     }
 
-    with open("verifications/class_vs_major_check.json", "w") as f:
+    with open(f"verifications/class_vs_major_check_{id}.json", "w") as f:
         json.dump(result, f)
 
     return result

@@ -14,19 +14,19 @@ client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
 
 # --- 1. GPA Consistency Check ---
-def check_gpa(resume_data, transcript_data):
+def check_gpa(resume_data, transcript_data, id):
     resume_gpa = float(resume_data.get("GPA", -1))
     transcript_gpa = float(transcript_data.get("GPA", -1))
     reason = None
     if abs(resume_gpa - transcript_gpa) > 0.05:
         reason = f"GPA on resume ({resume_gpa}) does not match transcript ({transcript_gpa})"
     result = {"val": transcript_gpa, "reason": reason}
-    with open("verifications/gpa_check.json", "w") as f:
+    with open(f"verifications/gpa_check_{id}.json", "w") as f:
         json.dump(result, f)
     return result
 
 # --- 2. Email School for Transcript Verification ---
-def email_school_for_transcript(student_name, school, transcript_path):
+def email_school_for_transcript(student_name, school, transcript_path, id):
     registrar_email = "fake.regis123@gmail.com"
     sender_email = "ritiagarwal2002@gmail.com"
     app_password = os.getenv("GMAIL_APP_PASSWORD")  # store your app password in env
@@ -54,25 +54,25 @@ def email_school_for_transcript(student_name, school, transcript_path):
     except Exception as e:
         result = {"val": False, "reason": str(e)}
 
-    with open("verifications/transcript_email_check.json", "w") as f:
+    with open(f"verifications/transcript_email_check_{id}.json", "w") as f:
         json.dump(result, f)
 
     return result
 
 
 # --- 3. Automatic Background Check ---
-def background_check_api(resume_data):
+def background_check_api(resume_data, id):
     # Simulate API response
     response = {"val": True, "reason": None}  # Assume clean background
-    with open("verifications/background_check.json", "w") as f:
+    with open(f"verifications/background_check_{id}.json", "w") as f:
         json.dump(response, f)
     return response
 
 # --- 4. Automatic Credit Check ---
-def credit_check_api(resume_data):
+def credit_check_api(resume_data, id):
     # Simulate API response
     response = {"val": True, "score": 725, "reason": None}
-    with open("verifications/credit_check.json", "w") as f:
+    with open(f"verifications/credit_check_{id}.json", "w") as f:
         json.dump(response, f)
     return response
 
@@ -156,14 +156,14 @@ def check_school_and_classes(transcript_data):
     return result
 
 # --- 8. Final Aggregator ---
-def aggregate_verifications(resume_data, transcript_data, transcript_path):
-    check_gpa(resume_data, transcript_data)
-    email_school_for_transcript(resume_data.get("name", "Student"), transcript_data.get("school", "Unknown School"), transcript_path)
-    background_check_api(resume_data)
-    credit_check_api(resume_data)
-    check_employment_history(resume_data)
-    check_courses_vs_major(transcript_data, resume_data)
-    check_school_and_classes(transcript_data)
+def aggregate_verifications(resume_data, transcript_data, transcript_path, id):
+    check_gpa(resume_data, transcript_data, id)
+    email_school_for_transcript(resume_data.get("name", "Student"), transcript_data.get("school", "Unknown School"), transcript_path, id)
+    background_check_api(resume_data, id)
+    credit_check_api(resume_data, id)
+    check_employment_history(resume_data, id)
+    check_courses_vs_major(transcript_data, resume_data, id)
+    check_school_and_classes(transcript_data, id)
 
     files = [
         "gpa_check.json",
@@ -181,17 +181,17 @@ def aggregate_verifications(resume_data, transcript_data, transcript_path):
             results[key] = json.load(file)
     return results
 
-# resume_text = extract_text_from_pdf("uploads/Fake_Unbelievable_Resume_Chintu_Kumar.pdf")
-resume_text = extract_text_from_pdf("uploads/riti_resume_compact.pdf")
-resume_data = parse_resume(resume_text)
-transcript_text = extract_text_from_pdf("uploads/rwcgi60.pdf")
-# transcript_text = extract_text_from_pdf("uploads/Fake_Transcript_Rajeev_Sharma.pdf")
-transcript_data = parse_transcript(transcript_text)
-# print(resume_data)
-# print(type(resume_data))
+# # resume_text = extract_text_from_pdf("uploads/Fake_Unbelievable_Resume_Chintu_Kumar.pdf")
+# resume_text = extract_text_from_pdf("uploads/riti_resume_compact.pdf")
+# resume_data = parse_resume(resume_text)
+# transcript_text = extract_text_from_pdf("uploads/rwcgi60.pdf")
+# # transcript_text = extract_text_from_pdf("uploads/Fake_Transcript_Rajeev_Sharma.pdf")
+# transcript_data = parse_transcript(transcript_text)
+# # print(resume_data)
+# # print(type(resume_data))
 
-# print(background_check_api(resume_data))
-# print(credit_check_api(resume_data))
-# print(email_school_for_transcript("Riti Agarwal", "Caltech", "uploads/rwcgi60.pdf"))
+# # print(background_check_api(resume_data))
+# # print(credit_check_api(resume_data))
+# # print(email_school_for_transcript("Riti Agarwal", "Caltech", "uploads/rwcgi60.pdf"))
 
-print(aggregate_verifications(resume_data, transcript_data, "uploads/rwcgi60.pdf"))
+# print(aggregate_verifications(resume_data, transcript_data, "uploads/rwcgi60.pdf"))

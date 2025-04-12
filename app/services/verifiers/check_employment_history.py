@@ -9,7 +9,7 @@ client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 def is_affirmative_response(content):
     return bool(re.match(r'^\s*yes\b', content.strip(), re.IGNORECASE))
 
-def check_employment_history(resume_data):
+def check_employment_history(resume_data, id):
     checked_history = []
     employment_history = resume_data.get("experience", [])
     for job in employment_history:
@@ -28,6 +28,6 @@ def check_employment_history(resume_data):
             reason = content
         job_result = {"company": company, "title": title, "reason": reason}
         checked_history.append(job_result)
-    with open("verifications/employment_check.json", "w") as f:
+    with open(f"verifications/employment_check_{id}.json", "w") as f:
         json.dump({"val": checked_history}, f)
     return checked_history

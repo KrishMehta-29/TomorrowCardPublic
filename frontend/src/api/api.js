@@ -55,7 +55,7 @@ export const uploadFiles = async (resume, transcript) => {
  * @param {string} transcriptFilename - Filename of the uploaded transcript
  * @returns {Promise} - Promise that resolves to the verification results
  */
-export const verifyDocuments = async (resumeFilename, transcriptFilename) => {
+export const verifyDocuments = async (resumeFilename, transcriptFilename, id) => {
   try {
     const response = await fetch(`${API_BASE_URL}/verify`, {
       method: 'POST',
@@ -67,6 +67,7 @@ export const verifyDocuments = async (resumeFilename, transcriptFilename) => {
       body: JSON.stringify({
         resume_filename: resumeFilename,
         transcript_filename: transcriptFilename,
+        id: id
       }),
     });
 

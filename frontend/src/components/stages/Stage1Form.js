@@ -54,7 +54,7 @@ const Stage1Form = ({ onNext, setIsProcessing, setProcessingMessage }) => {
       setStatusMessage('Analyzing documents...');
       if (setProcessingMessage) setProcessingMessage('Analyzing documents...');
       
-      const verifyResponse = await verifyDocuments(resume_filename, transcript_filename);
+      const verifyResponse = await verifyDocuments(resume_filename, transcript_filename, id);
       setVerifying(false);
       
       // Step 3: Move to next stage with all the data

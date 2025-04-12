@@ -2,7 +2,7 @@ from flask import jsonify, request
 from . import index_bp  # Import the blueprint
 import os
 import uuid
-from app.services.flows import verify_resume_and_transcript, predict_all_features_flow
+from app.services.flows import verify_resume_and_transcript, predict_all_features_flow, getCurrentProcesses
 
 # Create uploads directory if it doesn't exist
 UPLOAD_FOLDER = "app/uploads"
@@ -74,6 +74,8 @@ def verify_documents():
     
     resume_filename = data['resume_filename']
     transcript_filename = data['transcript_filename']
+    id = data['id']
+
     
     resume_path = os.path.join(UPLOAD_FOLDER, resume_filename)
     transcript_path = os.path.join(UPLOAD_FOLDER, transcript_filename)
@@ -84,7 +86,7 @@ def verify_documents():
     
     try:
         # Run verification
-        verification_results = verify_resume_and_transcript(resume_path, transcript_path)
+        verification_results = verify_resume_and_transcript(resume_path, transcript_path, id)
         return jsonify({"verification_results": verification_results})
     except Exception as e:
         return jsonify({"error": str(e)}), 500
@@ -111,5 +113,23 @@ def predict_features():
         # Run prediction
         prediction_results = predict_all_features_flow(resume_path)
         return jsonify({"prediction_results": prediction_results})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+@index_bp.route('/get_current_processes', methods=['GET', 'OPTIONS'])
+def get_current_processes():
+    # Handle preflight OPTIONS requests for CORS
+    if request.method == 'OPTIONS':
+        response = jsonify({"message": "CORS preflight request accepted"})
+        return response
+    id = request.args.get('id')
+    
+    if id is None:
+        return jsonify({"error": "Missing id"}), 400
+    print(id)
+    try:
+        # Get current processes
+        processes = getCurrentProcesses(id)
+        return jsonify({"processes": processes})
     except Exception as e:
         return jsonify({"error": str(e)}), 500

@@ -9,8 +9,8 @@ from dotenv import load_dotenv
 load_dotenv()
 
 
-def email_school_for_transcript(student_name, school, transcript_path):
-    registrar_email = "fake.regis123@gmail.com"
+def email_school_for_transcript(student_name, school, transcript_path, id):
+    registrar_email = "krishamitmehta@gmail.com"
     sender_email = "fakesender7@gmail.com"
     app_password = os.getenv("GMAIL_APP_PASSWORD")  
 
@@ -37,7 +37,7 @@ def email_school_for_transcript(student_name, school, transcript_path):
     except Exception as e:
         result = {"val": "Failed to Send Transcript Email to Registrar", "reason": str(e)}
 
-    with open("verifications/transcript_email_check.json", "w") as f:
+    with open(f"verifications/transcript_email_check_{id}.json", "w") as f:
         json.dump(result, f)
 
     return result

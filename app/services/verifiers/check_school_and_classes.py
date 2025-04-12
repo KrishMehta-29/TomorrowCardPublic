@@ -9,7 +9,7 @@ client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 def is_affirmative_response(content):
     return bool(re.match(r'^\s*yes\b', content.strip(), re.IGNORECASE))
 
-def check_school_and_classes(transcript_data):
+def check_school_and_classes(transcript_data, id):
     school = transcript_data.get("school", "")
     courses = transcript_data.get("courses", [])
     course_names = ", ".join([course["name"] for course in courses])
@@ -22,6 +22,6 @@ def check_school_and_classes(transcript_data):
     content = response.choices[0].message.content.strip()
     reason = None if is_affirmative_response(content) else content
     result = {"val": school, "reason": reason}
-    with open("verifications/school_and_class_check.json", "w") as f:
+    with open(f"verifications/school_and_class_check_{id}.json", "w") as f:
         json.dump(result, f)
     return result
