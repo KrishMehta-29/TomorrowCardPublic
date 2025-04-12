@@ -7,6 +7,33 @@ from dotenv import load_dotenv
 load_dotenv()
 client = OpenAI()
 
+# 🔧 Your original tool schema
+tools = [{
+    "type": "function",
+    "function": {
+        "name": "return_internship_salaries",
+        "description": "Return estimated monthly salaries (USD) for each internship listed",
+        "parameters": {
+            "type": "object",
+            "properties": {
+                "internship_salaries": {
+                    "type": "array",
+                    "items": {
+                        "type": "object",
+                        "properties": {
+                            "company": {"type": "string"},
+                            "title": {"type": "string"},
+                            "avg_pay_usd_per_month": {"type": "number"}
+                        },
+                        "required": ["company", "title", "avg_pay_usd_per_month"]
+                    }
+                }
+            },
+            "required": ["internship_salaries"]
+        }
+    }
+}]
+
 def predict_internship_salary(resume_data):
     experience = resume_data.get("experience", [])
     valid_experience = [
@@ -17,84 +44,48 @@ def predict_internship_salary(resume_data):
     if not valid_experience:
         return {"val": None, "reason": "No valid experience entries found in resume."}
 
-    system_prompt = (
+    # ✅ Step 1: Get estimates from web
+    system_prompt_1 = (
         "You are a compensation analyst. Estimate the average **monthly** salary in USD for each internship. "
-        "Use current market data and similar roles. Do not return 0 unless it's truly unpaid."
+        "Use current market data and similar roles. You can search the web. "
+        "Do not return 0 unless it's truly unpaid."
     )
-
-    user_prompt = (
+    user_prompt_1 = (
         f"Here is the list of internships:\n{json.dumps(valid_experience, indent=2)}\n\n"
-        "Return the salary list using the structured function."
+        "Return your estimates as a list like this:\n"
+        '[{"company": "CompanyName", "title": "Intern Title", "avg_pay_usd_per_month": 5000}, ...]'
     )
-
-    tools = [{
-        "type": "function",
-        "function": {
-            "name": "return_internship_salaries",
-            "description": "Return estimated monthly salaries (USD) for each internship listed",
-            "parameters": {
-                "type": "object",
-                "properties": {
-                    "internship_salaries": {
-                        "type": "array",
-                        "items": {
-                            "type": "object",
-                            "properties": {
-                                "company": {"type": "string"},
-                                "title": {"type": "string"},
-                                "avg_pay_usd_per_month": {"type": "number"}
-                            },
-                            "required": ["company", "title", "avg_pay_usd_per_month"]
-                        }
-                    }
-                },
-                "required": ["internship_salaries"]
-            }
-        }
-    }]
 
     try:
-        response = client.chat.completions.create(
+        search_response = client.chat.completions.create(
+            model="gpt-4o-mini-search-preview",
+            messages=[
+                {"role": "system", "content": system_prompt_1},
+                {"role": "user", "content": user_prompt_1}
+            ],
+            web_search_options={}  # ✅ Enables search
+        )
+
+        raw_salary_output = search_response.choices[0].message.content.strip()
+        print(raw_salary_output)
+
+        # ✅ Step 2: Reformat output using tools + gpt-4o
+        system_prompt_2 = "You are a data parser. Convert this into structured data using the provided function."
+        user_prompt_2 = f"Please format the following data into the correct schema:\n{raw_salary_output}"
+
+        structure_response = client.chat.completions.create(
             model="gpt-4o",
             messages=[
-                {"role": "system", "content": system_prompt},
-                {"role": "user", "content": user_prompt}
+                {"role": "system", "content": system_prompt_2},
+                {"role": "user", "content": user_prompt_2}
             ],
             tools=tools,
             tool_choice="auto"
         )
 
-        tool_call = response.choices[0].message.tool_calls[0]
+        tool_call = structure_response.choices[0].message.tool_calls[0]
         parsed = json.loads(tool_call.function.arguments)
-        salaries = parsed["internship_salaries"]
-
-        # 🔁 Fix 0 salaries with direct GPT questions
-        fixed_salaries = []
-        for s in salaries:
-            if s["avg_pay_usd_per_month"] > 0:
-                fixed_salaries.append(s)
-            else:
-                # Try re-asking GPT for just this role
-                title = s["title"]
-                company = s["company"]
-                followup_prompt = (
-                    f"What is the average monthly pay in USD for a {title} at {company}?\n"
-                    "Just give the number only."
-                )
-                try:
-                    retry = client.chat.completions.create(
-                        model="gpt-4o-mini",
-                        messages=[{"role": "user", "content": followup_prompt}],
-                        temperature=0
-                    )
-                    gpt_output = retry.choices[0].message.content.strip()
-                    salary_guess = int(''.join(c for c in gpt_output if c.isdigit()))
-                    s["avg_pay_usd_per_month"] = salary_guess
-                except:
-                    s["avg_pay_usd_per_month"] = None  # still fallback if GPT fails
-                fixed_salaries.append(s)
-
-        return {"val": fixed_salaries, "reason": "Generated with function call + GPT fallback for missing estimates"}
+        return {"val": parsed["internship_salaries"], "reason": "Used web + structured function call"}
 
     except Exception as e:
-        return {"val": None, "reason": f"Function call failed: {str(e)}"}
+        return {"val": None, "reason": f"Failed during salary estimation: {str(e)}"}
