@@ -89,3 +89,4 @@ def predict_internship_salary(resume_data):
 
     except Exception as e:
         return {"val": None, "reason": f"Failed during salary estimation: {str(e)}"}
+#
