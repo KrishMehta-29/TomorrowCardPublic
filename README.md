@@ -12,4 +12,3 @@ Instead of relying purely on a credit score, we look at how good of a student yo
 
 The better your predicted future income, the more you can borrow today — and at better rates.
 
-This can be structured like a credit card or a lending product (like a personal loan), depending on what makes sense.
